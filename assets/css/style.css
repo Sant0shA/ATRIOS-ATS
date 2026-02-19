@@ -1,0 +1,138 @@
+/* ============================================================
+   ATRIOS ATS - MASTER STYLESHEET
+   ============================================================
+   
+   PURPOSE: Central stylesheet that imports all design system modules
+   VERSION: 1.0.0
+   LAST MODIFIED: 2026-02-20
+   
+   ARCHITECTURE:
+   This file imports all CSS modules in the correct order:
+   1. Variables (design tokens)
+   2. Layout (structure)
+   3. Components (reusable UI elements)
+   
+   USAGE:
+   Include this single file in your HTML:
+   <link rel="stylesheet" href="/assets/css/style.css">
+   
+   CHANGE LOG:
+   2026-02-20: Initial design system creation
+   
+   ============================================================ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Import Design System Modules */
+@import url('variables.css');
+@import url('layout.css');
+@import url('components.css');
+
+/* ============================================================
+   [GLOBAL-STYLES] - Base Global Styles
+   ============================================================ */
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+a {
+  color: var(--atrios-orange);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--atrios-orange-dark);
+  text-decoration: underline;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-md); }
+
+/* Paragraphs */
+p {
+  margin: 0 0 var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+/* Lists */
+ul, ol {
+  margin: 0;
+  padding: 0;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Code */
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--gray-100);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+pre {
+  padding: var(--space-4);
+  overflow-x: auto;
+}
+
+/* ============================================================
+   [ACCESSIBILITY] - Focus States
+   ============================================================ */
+
+*:focus {
+  outline: 2px solid var(--atrios-orange);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+   [PRINT] - Print Styles
+   ============================================================ */
+
+@media print {
+  .sidebar,
+  .top-navbar,
+  .btn,
+  .no-print {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  body {
+    background: white;
+  }
+}

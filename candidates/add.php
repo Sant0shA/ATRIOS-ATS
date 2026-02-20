@@ -189,8 +189,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             logActivity($db, $_SESSION['user_id'], 'create', 'candidate', $newCandidateId, 
                        "Created candidate: {$formData['first_name']} {$formData['last_name']}");
             
-            setFlashMessage('success', "Candidate '{$formData['first_name']} {$formData['last_name']}' added successfully!");
-            header('Location: view.php?id=' . $newCandidateId);
+            // Show success popup and redirect
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
+                <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
+            </head>
+            <body>
+                <div class='modal show d-block' style='background: rgba(0,0,0,0.5);'>
+                    <div class='modal-dialog modal-dialog-centered'>
+                        <div class='modal-content'>
+                            <div class='modal-body text-center py-5'>
+                                <i class='fas fa-check-circle text-success' style='font-size: 64px;'></i>
+                                <h3 class='mt-4'>Candidate Added Successfully!</h3>
+                                <p class='lead'>{$formData['first_name']} {$formData['last_name']}</p>
+                                <p class='text-secondary'>Redirecting to candidates list...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = 'index.php';
+                    }, 2000);
+                </script>
+            </body>
+            </html>";
             exit();
             
         } catch (PDOException $e) {

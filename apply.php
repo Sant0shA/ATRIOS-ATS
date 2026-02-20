@@ -127,14 +127,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Screening answers validation
     if (empty($formData['screening_answer_1'])) {
         $errors['screening_answer_1'] = 'This question is required';
-    } elseif (strlen($formData['screening_answer_1']) < 20) {
-        $errors['screening_answer_1'] = 'Please provide at least 20 characters';
+    } elseif (strlen($formData['screening_answer_1']) < 2) {
+        $errors['screening_answer_1'] = 'Please provide at least 2 characters';
     }
     
     if (empty($formData['screening_answer_2'])) {
         $errors['screening_answer_2'] = 'This question is required';
-    } elseif (strlen($formData['screening_answer_2']) < 20) {
-        $errors['screening_answer_2'] = 'Please provide at least 20 characters';
+    } elseif (strlen($formData['screening_answer_2']) < 2) {
+        $errors['screening_answer_2'] = 'Please provide at least 2 characters';
     }
     
     // LinkedIn URL validation (optional but validated if provided)
@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute([$resumePath, $candidateId]);
                 }
             } else {
-                // Create new candidate
+                // Create new candidate (no added_by since it's public application)
                 $stmt = $db->prepare("
                     INSERT INTO candidates (
                         first_name, last_name, email, phone, current_location,
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
         } catch (PDOException $e) {
             $db->rollBack();
-            $errors['general'] = 'Application submission failed. Please try again.';
+            $errors['general'] = 'Application submission failed: ' . $e->getMessage();
         }
     }
 }
@@ -254,6 +254,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body style="background: #f9fafb;">
     
     <div class="container" style="max-width: 800px; padding: 40px 20px;">
+        
+        <!-- Atrios Branding Header -->
+        <div class="text-center mb-4">
+            <div style="display: inline-flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #F16136 0%, #FF8A65 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-briefcase" style="color: white; font-size: 20px;"></i>
+                </div>
+                <h3 style="margin: 0; color: #1a1a1a; font-weight: 600;">Atrios ATS</h3>
+            </div>
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">Recruitment Management System</p>
+        </div>
         
         <?php if ($success): ?>
             <!-- Success Message -->

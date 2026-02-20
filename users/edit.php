@@ -326,12 +326,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label class="form-label">Confirm New Password</label>
                         <input type="password" 
                                name="password_confirm" 
+                               id="password_confirm"
                                class="form-control <?php echo isset($errors['password_confirm']) ? 'is-invalid' : ''; ?>"
                                placeholder="Confirm new password">
+                        <div id="password-match-indicator" class="mt-2" style="display: none;">
+                            <small class="text-success" id="match-success" style="display: none;">
+                                <i class="fas fa-check-circle"></i> Passwords match!
+                            </small>
+                            <small class="text-danger" id="match-error" style="display: none;">
+                                <i class="fas fa-times-circle"></i> Passwords do not match
+                            </small>
+                        </div>
                         <?php if (isset($errors['password_confirm'])): ?>
                             <div class="invalid-feedback d-block"><?php echo $errors['password_confirm']; ?></div>
                         <?php endif; ?>
                     </div>
+                    
+                    <script>
+                    // Real-time password match validation
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const password = document.querySelector('input[name="password"]');
+                        const confirmPassword = document.getElementById('password_confirm');
+                        const indicator = document.getElementById('password-match-indicator');
+                        const matchSuccess = document.getElementById('match-success');
+                        const matchError = document.getElementById('match-error');
+                        
+                        function checkPasswordMatch() {
+                            const pass1 = password.value;
+                            const pass2 = confirmPassword.value;
+                            
+                            // If both fields are empty, hide indicator
+                            if (pass1.length === 0 && pass2.length === 0) {
+                                indicator.style.display = 'none';
+                                confirmPassword.classList.remove('is-valid', 'is-invalid');
+                                return;
+                            }
+                            
+                            // If confirm password is empty but password has value
+                            if (pass2.length === 0 && pass1.length > 0) {
+                                indicator.style.display = 'none';
+                                confirmPassword.classList.remove('is-valid', 'is-invalid');
+                                return;
+                            }
+                            
+                            // If confirm password has value, show indicator
+                            if (pass2.length > 0) {
+                                indicator.style.display = 'block';
+                                
+                                if (pass1 === pass2 && pass1.length > 0) {
+                                    matchSuccess.style.display = 'block';
+                                    matchError.style.display = 'none';
+                                    confirmPassword.classList.add('is-valid');
+                                    confirmPassword.classList.remove('is-invalid');
+                                } else {
+                                    matchSuccess.style.display = 'none';
+                                    matchError.style.display = 'block';
+                                    confirmPassword.classList.add('is-invalid');
+                                    confirmPassword.classList.remove('is-valid');
+                                }
+                            }
+                        }
+                        
+                        password.addEventListener('input', checkPasswordMatch);
+                        confirmPassword.addEventListener('input', checkPasswordMatch);
+                    });
+                    </script>
                     
                     <!-- Submit Buttons -->
                     <div class="d-flex gap-2">

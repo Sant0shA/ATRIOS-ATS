@@ -1,15 +1,10 @@
 <?php
 ob_start();
 /* ============================================================
-   FILE: dashboard.php
+   FILE: dashboard.php - FIXED VERSION
    PURPOSE: Main dashboard with metrics and activity overview
-   ACCESS: All authenticated users (role-based data)
    
-   SECTIONS:
-   - Metrics Cards (Jobs, Candidates, Applications, Clients)
-   - Open Jobs List
-   - Top Performing Jobs
-   - Recent Activity Feed
+   FIXED: Query logic for role-based data access
    
    LAST MODIFIED: 2026-02-20
    ============================================================ */
@@ -24,53 +19,58 @@ try {
     // Total Jobs (role-based)
     if (hasRole('recruiter')) {
         // Recruiters see jobs assigned to them
-        $jobsStmt = $db->prepare("
+        $stmt = $db->prepare("
             SELECT COUNT(*) as total 
             FROM jobs 
-            WHERE JSON_CONTAINS(assigned_to, ?)
+            WHERE JSON_CONTAINS(assigned_to, ?, '$')
         ");
-        $jobsStmt->execute([json_encode($_SESSION['user_id'])]);
+        $stmt->execute(['"' . $_SESSION['user_id'] . '"']);
+        $totalJobs = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     } else {
         // Admin/Manager see all jobs
-        $jobsStmt = $db->query("SELECT COUNT(*) as total FROM jobs");
+        $stmt = $db->query("SELECT COUNT(*) as total FROM jobs");
+        $totalJobs = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
-    $totalJobs = $jobsStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Total Candidates (role-based)
     if (hasRole('recruiter')) {
         // Recruiters see their candidates
-        $candidatesStmt = $db->prepare("
+        $stmt = $db->prepare("
             SELECT COUNT(*) as total 
             FROM candidates 
-            WHERE assigned_to = ? OR added_by = ?
+            WHERE (assigned_to = ? OR added_by = ?) AND blacklisted = 0
         ");
-        $candidatesStmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+        $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+        $totalCandidates = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     } else {
-        $candidatesStmt = $db->query("SELECT COUNT(*) as total FROM candidates WHERE blacklisted = 0");
+        // Admin/Manager see all candidates
+        $stmt = $db->query("SELECT COUNT(*) as total FROM candidates WHERE blacklisted = 0");
+        $totalCandidates = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
-    $totalCandidates = $candidatesStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Total Applications
-    $applicationsStmt = $db->query("SELECT COUNT(*) as total FROM applications");
-    $totalApplications = $applicationsStmt->fetch(PDO::FETCH_ASSOC)['total'];
+    // Total Applications (everyone sees all)
+    $stmt = $db->query("SELECT COUNT(*) as total FROM applications");
+    $totalApplications = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // New Applications (last 7 days)
-    $newAppsStmt = $db->query("
+    $stmt = $db->query("
         SELECT COUNT(*) as total 
         FROM applications 
         WHERE applied_at >= DATE_SUB(NOW(), INTERVAL 7 DAYS)
     ");
-    $newApplications = $newAppsStmt->fetch(PDO::FETCH_ASSOC)['total'];
+    $newApplications = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Active Clients
+    // Active Clients (Admin/Manager only)
     if (hasRole(['admin', 'manager'])) {
-        $clientsStmt = $db->query("SELECT COUNT(*) as total FROM clients WHERE status = 'active'");
-        $totalClients = $clientsStmt->fetch(PDO::FETCH_ASSOC)['total'];
+        $stmt = $db->query("SELECT COUNT(*) as total FROM clients WHERE status = 'active'");
+        $totalClients = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     } else {
         $totalClients = 0;
     }
     
 } catch (PDOException $e) {
+    // Log error for debugging
+    error_log("Dashboard metrics error: " . $e->getMessage());
     $totalJobs = 0;
     $totalCandidates = 0;
     $totalApplications = 0;
@@ -83,20 +83,21 @@ try {
    ============================================================ */
 try {
     if (hasRole('recruiter')) {
-        $openJobsStmt = $db->prepare("
+        $stmt = $db->prepare("
             SELECT j.job_id, j.job_title, c.company_name,
                    (SELECT COUNT(*) FROM applications WHERE job_id = j.job_id) as app_count,
                    j.created_at
             FROM jobs j
             LEFT JOIN clients c ON j.client_id = c.client_id
             WHERE j.status = 'active' 
-            AND JSON_CONTAINS(j.assigned_to, ?)
+            AND JSON_CONTAINS(j.assigned_to, ?, '$')
             ORDER BY j.created_at DESC
             LIMIT 5
         ");
-        $openJobsStmt->execute([json_encode($_SESSION['user_id'])]);
+        $stmt->execute(['"' . $_SESSION['user_id'] . '"']);
+        $openJobs = $stmt->fetchAll();
     } else {
-        $openJobsStmt = $db->query("
+        $stmt = $db->query("
             SELECT j.job_id, j.job_title, c.company_name,
                    (SELECT COUNT(*) FROM applications WHERE job_id = j.job_id) as app_count,
                    j.created_at
@@ -106,9 +107,10 @@ try {
             ORDER BY j.created_at DESC
             LIMIT 5
         ");
+        $openJobs = $stmt->fetchAll();
     }
-    $openJobs = $openJobsStmt->fetchAll();
 } catch (PDOException $e) {
+    error_log("Dashboard open jobs error: " . $e->getMessage());
     $openJobs = [];
 }
 
@@ -116,20 +118,21 @@ try {
    [FETCH-TOP-JOBS] - Get Top Performing Jobs by Applications
    ============================================================ */
 try {
-    $topJobsStmt = $db->query("
+    $stmt = $db->query("
         SELECT j.job_id, j.job_title, c.company_name,
                COUNT(a.application_id) as app_count
         FROM jobs j
         LEFT JOIN clients c ON j.client_id = c.client_id
         LEFT JOIN applications a ON j.job_id = a.job_id
         WHERE j.status IN ('active', 'on-hold')
-        GROUP BY j.job_id
+        GROUP BY j.job_id, j.job_title, c.company_name
         HAVING app_count > 0
         ORDER BY app_count DESC
         LIMIT 5
     ");
-    $topJobs = $topJobsStmt->fetchAll();
+    $topJobs = $stmt->fetchAll();
 } catch (PDOException $e) {
+    error_log("Dashboard top jobs error: " . $e->getMessage());
     $topJobs = [];
 }
 
@@ -137,15 +140,16 @@ try {
    [FETCH-RECENT-ACTIVITY] - Get Recent Activity
    ============================================================ */
 try {
-    $activityStmt = $db->query("
+    $stmt = $db->query("
         SELECT activity_id, action, entity_type, description, created_at, u.full_name
         FROM activity_logs a
         LEFT JOIN users u ON a.user_id = u.user_id
-        ORDER BY created_at DESC
+        ORDER BY a.created_at DESC
         LIMIT 10
     ");
-    $recentActivity = $activityStmt->fetchAll();
+    $recentActivity = $stmt->fetchAll();
 } catch (PDOException $e) {
+    error_log("Dashboard activity error: " . $e->getMessage());
     $recentActivity = [];
 }
 ?>
@@ -325,7 +329,7 @@ try {
         </div>
     </div>
     
-    <!-- Active Clients -->
+    <!-- Active Clients / New This Week -->
     <?php if (hasRole(['admin', 'manager'])): ?>
     <div class="col-md-3">
         <div class="metric-card">
@@ -394,7 +398,7 @@ try {
                 <?php if (empty($topJobs)): ?>
                     <div class="p-4 text-center text-secondary">
                         <i class="fas fa-chart-line fa-2x mb-2"></i>
-                        <p class="mb-0">No data yet</p>
+                        <p class="mb-0">No applications yet</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($topJobs as $index => $job): ?>

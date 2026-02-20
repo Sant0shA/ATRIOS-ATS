@@ -189,31 +189,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             logActivity($db, $_SESSION['user_id'], 'create', 'candidate', $newCandidateId, 
                        "Created candidate: {$formData['first_name']} {$formData['last_name']}");
             
-            // Show success popup and redirect
+            // Show beautiful success popup
             echo "<!DOCTYPE html>
             <html>
             <head>
+                <meta charset='UTF-8'>
                 <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
                 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
+                <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap' rel='stylesheet'>
+                <style>
+                    body { 
+                        font-family: 'Inter', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        background: rgba(0, 0, 0, 0.4);
+                        animation: fadeIn 0.3s ease;
+                    }
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    @keyframes slideUp {
+                        from { 
+                            opacity: 0;
+                            transform: translateY(20px) scale(0.95);
+                        }
+                        to { 
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
+                        }
+                    }
+                    @keyframes checkmark {
+                        0% { transform: scale(0) rotate(-45deg); }
+                        50% { transform: scale(1.2) rotate(-45deg); }
+                        100% { transform: scale(1) rotate(-45deg); }
+                    }
+                    .success-modal {
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                        max-width: 420px;
+                        width: 90%;
+                        padding: 48px 40px 40px;
+                        text-align: center;
+                        animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                    .success-icon {
+                        width: 80px;
+                        height: 80px;
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 24px;
+                        position: relative;
+                    }
+                    .success-icon::before {
+                        content: '';
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(16, 185, 129, 0.2);
+                        border-radius: 50%;
+                        animation: pulse 2s infinite;
+                    }
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); opacity: 1; }
+                        50% { transform: scale(1.1); opacity: 0.5; }
+                    }
+                    .checkmark {
+                        width: 32px;
+                        height: 18px;
+                        border-left: 4px solid white;
+                        border-bottom: 4px solid white;
+                        transform: rotate(-45deg);
+                        animation: checkmark 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+                        transform-origin: center;
+                    }
+                    .success-title {
+                        font-size: 28px;
+                        font-weight: 600;
+                        color: #1a1a1a;
+                        margin: 0 0 12px;
+                        line-height: 1.2;
+                    }
+                    .success-name {
+                        font-size: 20px;
+                        color: #10b981;
+                        font-weight: 500;
+                        margin: 0 0 8px;
+                    }
+                    .success-message {
+                        font-size: 15px;
+                        color: #6b7280;
+                        margin: 0 0 32px;
+                        line-height: 1.5;
+                    }
+                    .btn-ok {
+                        background: linear-gradient(135deg, #F16136 0%, #FF8A65 100%);
+                        color: white;
+                        border: none;
+                        padding: 14px 48px;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 4px 12px rgba(241, 97, 54, 0.3);
+                    }
+                    .btn-ok:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(241, 97, 54, 0.4);
+                    }
+                    .btn-ok:active {
+                        transform: translateY(0);
+                    }
+                </style>
             </head>
             <body>
-                <div class='modal show d-block' style='background: rgba(0,0,0,0.5);'>
-                    <div class='modal-dialog modal-dialog-centered'>
-                        <div class='modal-content'>
-                            <div class='modal-body text-center py-5'>
-                                <i class='fas fa-check-circle text-success' style='font-size: 64px;'></i>
-                                <h3 class='mt-4'>Candidate Added Successfully!</h3>
-                                <p class='lead'>{$formData['first_name']} {$formData['last_name']}</p>
-                                <p class='text-secondary'>Redirecting to candidates list...</p>
-                            </div>
-                        </div>
+                <div class='success-modal'>
+                    <div class='success-icon'>
+                        <div class='checkmark'></div>
                     </div>
+                    <h2 class='success-title'>Candidate Added!</h2>
+                    <p class='success-name'>{$formData['first_name']} {$formData['last_name']}</p>
+                    <p class='success-message'>The candidate has been successfully added to your database.</p>
+                    <button class='btn-ok' onclick='window.location.href=\"index.php\"'>
+                        OK, Got it!
+                    </button>
                 </div>
-                <script>
-                    setTimeout(function() {
-                        window.location.href = 'index.php';
-                    }, 2000);
-                </script>
             </body>
             </html>";
             exit();

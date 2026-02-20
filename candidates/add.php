@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         align-items: center;
                         justify-content: center;
                         min-height: 100vh;
-                        background: rgba(0, 0, 0, 0.4);
+                        background: rgba(0, 0, 0, 0.15);
                         animation: fadeIn 0.3s ease;
                     }
                     @keyframes fadeIn {

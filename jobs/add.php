@@ -84,7 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['screening_question_2'] = 'Screening Question 2 is required';
     }
     
-    // Experience validation
+    // Assigned to validation
+    $assignedRecruiters = $_POST['assigned_to'] ?? [];
+    if (empty($assignedRecruiters)) {
+        $errors['assigned_to'] = 'Please assign at least one recruiter to this job';
+    }
     if ($formData['experience_max'] > 0 && $formData['experience_max'] < $formData['experience_min']) {
         $errors['experience_max'] = 'Maximum experience must be greater than minimum';
     }
@@ -457,11 +461,12 @@ $locationOptions = [
                     
                     <!-- Assign Recruiters (Multi-select) -->
                     <div class="mb-3">
-                        <label class="form-label">Assign Recruiters (Team)</label>
+                        <label class="form-label">Assign Recruiters (Team) *</label>
                         <select name="assigned_to[]" 
-                                class="form-control" 
+                                class="form-control <?php echo isset($errors['assigned_to']) ? 'is-invalid' : ''; ?>" 
                                 multiple 
-                                size="5">
+                                size="6"
+                                required>
                             <?php foreach ($users as $user): ?>
                                 <option value="<?php echo $user['user_id']; ?>">
                                     <?php echo htmlspecialchars($user['full_name']); ?> 
@@ -469,7 +474,10 @@ $locationOptions = [
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <small class="text-tertiary">Hold Ctrl/Cmd to select multiple recruiters</small>
+                        <small class="text-tertiary">Hold Ctrl/Cmd to select multiple recruiters. At least one required.</small>
+                        <?php if (isset($errors['assigned_to'])): ?>
+                            <div class="invalid-feedback d-block"><?php echo $errors['assigned_to']; ?></div>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="row">
@@ -539,6 +547,7 @@ $locationOptions = [
                     <li>Client</li>
                     <li>Job Title</li>
                     <li>Location</li>
+                    <li>At least 1 Recruiter</li>
                     <li>Both Screening Questions</li>
                 </ul>
                 

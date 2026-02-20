@@ -164,12 +164,22 @@ try {
             </div>
             
             <div class="col-md-2">
-                <label class="form-label">Status</label>
-                <select name="status" class="form-control">
-                    <option value="">Active</option>
-                    <option value="active" <?php echo $statusFilter === 'active' ? 'selected' : ''; ?>>Active</option>
-                    <option value="placed" <?php echo $statusFilter === 'placed' ? 'selected' : ''; ?>>Placed</option>
-                    <option value="blacklisted" <?php echo $statusFilter === 'blacklisted' ? 'selected' : ''; ?>>Blacklisted</option>
+                <label class="form-label">Skill</label>
+                <select name="skill" class="form-control">
+                    <option value="">All Skills</option>
+                    <?php 
+                    $popularSkills = [
+                        'Programme Management', 'Project Management', 'Data Analysis', 
+                        'Full Stack Development', 'Product Management', 'B2B Sales',
+                        'UI/UX Design', 'Marketing', 'Finance', 'HR Business Partnering'
+                    ];
+                    foreach ($popularSkills as $skill): 
+                    ?>
+                        <option value="<?php echo htmlspecialchars($skill); ?>" 
+                                <?php echo $skillFilter === $skill ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($skill); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             

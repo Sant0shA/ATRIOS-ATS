@@ -21,7 +21,7 @@ require_once '../includes/header.php';
    [SEARCH-FILTER] - Get Search and Filter Parameters
    ============================================================ */
 $search = $_GET['search'] ?? '';
-$skillFilter = $_GET['skill'] ?? '';
+$skillFilters = isset($_GET['skills']) ? $_GET['skills'] : [];
 $locationFilter = $_GET['location'] ?? '';
 $statusFilter = $_GET['status'] ?? '';
 $assignedFilter = $_GET['assigned_to'] ?? '';
@@ -60,10 +60,14 @@ try {
         $params[] = $searchTerm;
     }
     
-    // Apply skill filter
-    if ($skillFilter) {
-        $query .= " AND c.skills LIKE ?";
-        $params[] = "%$skillFilter%";
+    // Apply skill filter (OR condition - match any skill)
+    if (!empty($skillFilters)) {
+        $skillConditions = [];
+        foreach ($skillFilters as $skill) {
+            $skillConditions[] = "c.skills LIKE ?";
+            $params[] = "%$skill%";
+        }
+        $query .= " AND (" . implode(' OR ', $skillConditions) . ")";
     }
     
     // Apply location filter
@@ -134,7 +138,7 @@ try {
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Search</label>
                 <input type="text" 
                        name="search" 
@@ -163,24 +167,46 @@ try {
                 </select>
             </div>
             
-            <div class="col-md-2">
-                <label class="form-label">Skill</label>
-                <select name="skill" class="form-control">
-                    <option value="">All Skills</option>
+            <div class="col-md-3">
+                <label class="form-label">Skills (Any)</label>
+                <select name="skills[]" class="form-control" multiple size="1">
                     <?php 
-                    $popularSkills = [
-                        'Programme Management', 'Project Management', 'Data Analysis', 
-                        'Full Stack Development', 'Product Management', 'B2B Sales',
-                        'UI/UX Design', 'Marketing', 'Finance', 'HR Business Partnering'
+                    $allSkills = [
+                        'Programme Management', 'Project Implementation', 'Project Planning', 'Budget Management',
+                        'Grant Management', 'Monitoring & Evaluation (M&E)', 'Impact Assessment', 'MEL Framework Design',
+                        'Data Analysis for Programs', 'MIS & Dashboarding', 'Proposal / Grant Writing', 'Fundraising Strategy',
+                        'Donor Management & Reporting', 'CSR Partnerships', 'Community Mobilisation', 'Capacity Building & Training',
+                        'Strategic Planning', 'Organisation Development', 'Change Management', 'Programme Scaling',
+                        'Partnership Development', 'Talent Acquisition', 'HR Business Partnering', 'Performance Management',
+                        'Learning & Development', 'POSH & Safeguarding', 'Diversity & Inclusion', 'Finance',
+                        'FP&A', 'Financial Modelling', 'Business Finance', 'Corporate Finance',
+                        'Marketing', 'Performance Marketing', 'GTM Strategy', 'Product Marketing', 'Marketing Analytics',
+                        'Full Stack Development', 'Backend Development', 'Frontend Development', 'Cloud Computing',
+                        'DevOps', 'Cybersecurity', 'Data Engineering', 'AI / Machine Learning',
+                        'Data Analysis', 'Business Intelligence', 'Data Visualization', 'SQL',
+                        'Python for Data', 'Big Data', 'Operations Management', 'Process Improvement',
+                        'Supply Chain Management', 'Vendor Management', 'Procurement', 'Quality Management',
+                        'Product Management', 'Product Strategy', 'Roadmap Planning', 'User Research',
+                        'Agile / Scrum', 'Product Analytics', 'B2B Sales', 'B2C Sales',
+                        'Key Account Management', 'Business Development', 'Sales Strategy', 'Revenue Operations',
+                        'Business Strategy', 'Management Consulting', 'Transformation Programs', 'Stakeholder Management',
+                        'Program Management', 'UI/UX Design', 'Product Design', 'Interaction Design',
+                        'Design Systems', 'User Testing', 'Visual Design', 'Contract Management',
+                        'Corporate Law', 'Regulatory Compliance', 'Legal Research', 'Litigation Management',
+                        'Risk & Governance', 'Office Administration', 'Facilities Management', 'Travel & Vendor Coordination',
+                        'MIS & Reporting', 'Executive Assistance', 'P&L Management', 'Cross-functional Leadership',
+                        'Organizational Development', 'Board / Investor Management', 'Scaling Operations'
                     ];
-                    foreach ($popularSkills as $skill): 
+                    $selectedSkills = isset($_GET['skills']) ? $_GET['skills'] : [];
+                    foreach ($allSkills as $skill): 
                     ?>
                         <option value="<?php echo htmlspecialchars($skill); ?>" 
-                                <?php echo $skillFilter === $skill ? 'selected' : ''; ?>>
+                                <?php echo in_array($skill, $selectedSkills) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($skill); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <small class="text-tertiary">Hold Ctrl/Cmd to select multiple</small>
             </div>
             
             <div class="col-md-2">
@@ -213,7 +239,7 @@ try {
             <div class="p-4 text-center text-secondary">
                 <i class="fas fa-user-tie fa-3x mb-3"></i>
                 <p>No candidates found</p>
-                <?php if ($search || $skillFilter || $locationFilter || $statusFilter || $assignedFilter): ?>
+                <?php if ($search || !empty($skillFilters) || $locationFilter || $statusFilter || $assignedFilter): ?>
                     <a href="index.php" class="btn btn-sm btn-secondary">Clear Filters</a>
                 <?php endif; ?>
             </div>

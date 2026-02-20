@@ -17,7 +17,7 @@
    - [CONTENT-START] Begin content area
    
    CHANGE LOG:
-   2026-02-20: Refactored to use design system CSS
+   2026-02-20: Removed Applications and Reports from sidebar
    ============================================================ */
 
 /* ============================================================
@@ -136,18 +136,6 @@ if (!$currentUser) {
             <li>
                 <a href="<?php echo SITE_URL; ?>/candidates/">
                     <i class="fas fa-user-tie"></i> Candidates
-                </a>
-            </li>
-            
-            <li>
-                <a href="<?php echo SITE_URL; ?>/applications/">
-                    <i class="fas fa-file-alt"></i> Applications
-                </a>
-            </li>
-            
-            <li>
-                <a href="<?php echo SITE_URL; ?>/reports/">
-                    <i class="fas fa-chart-bar"></i> Reports
                 </a>
             </li>
             

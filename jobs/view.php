@@ -5,11 +5,7 @@ ob_start();
    PURPOSE: View job details, public apply link, and applications
    ACCESS: All users (based on assignment/client ownership)
    
-   SECTIONS:
-   - [AUTH-CHECK] Verify user access
-   - [FETCH-JOB] Get job data from database
-   - [FETCH-APPLICATIONS] Get applications for this job
-   - [HTML-OUTPUT] Display job details and apply link
+   UPDATED: Added Accept/Reject/Status buttons for applications
    
    LAST MODIFIED: 2026-02-20
    ============================================================ */
@@ -253,10 +249,39 @@ $applyUrl = SITE_URL . '/apply.php?token=' . $job['apply_link_token'];
                                         <small><?php echo timeAgo($app['applied_at']); ?></small>
                                     </td>
                                     <td>
-                                        <a href="../applications/view.php?id=<?php echo $app['application_id']; ?>" 
-                                           class="btn btn-outline btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
+                                        <!-- ✅ UPDATED ACTIONS COLUMN -->
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <?php if ($app['status'] === 'new' || $app['status'] === 'screening'): ?>
+                                                <!-- Accept Button (opens in new tab) -->
+                                                <a href="../applications/accept.php?id=<?php echo $app['application_id']; ?>" 
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-success"
+                                                   title="Accept & Enhance Profile">
+                                                    <i class="fas fa-check"></i> Accept
+                                                </a>
+                                                
+                                                <!-- Reject Button -->
+                                                <a href="../applications/reject.php?id=<?php echo $app['application_id']; ?>" 
+                                                   class="btn btn-sm btn-danger"
+                                                   title="Reject Application">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </a>
+                                            <?php endif; ?>
+                                            
+                                            <!-- Status Dropdown -->
+                                            <select class="form-select form-select-sm" 
+                                                    style="width: auto; min-width: 120px;"
+                                                    onchange="if(confirm('Change status to ' + this.options[this.selectedIndex].text + '?')) { window.location.href='../applications/status.php?id=<?php echo $app['application_id']; ?>&status=' + this.value; } else { this.value='<?php echo $app['status']; ?>'; }">
+                                                <option value="new" <?php echo $app['status'] === 'new' ? 'selected' : ''; ?>>New</option>
+                                                <option value="screening" <?php echo $app['status'] === 'screening' ? 'selected' : ''; ?>>Screening</option>
+                                                <option value="shortlisted" <?php echo $app['status'] === 'shortlisted' ? 'selected' : ''; ?>>Shortlisted</option>
+                                                <option value="interviewed" <?php echo $app['status'] === 'interviewed' ? 'selected' : ''; ?>>Interviewed</option>
+                                                <option value="offered" <?php echo $app['status'] === 'offered' ? 'selected' : ''; ?>>Offered</option>
+                                                <option value="hired" <?php echo $app['status'] === 'hired' ? 'selected' : ''; ?>>Hired</option>
+                                                <option value="rejected" <?php echo $app['status'] === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+                                                <option value="withdrawn" <?php echo $app['status'] === 'withdrawn' ? 'selected' : ''; ?>>Withdrawn</option>
+                                            </select>
+                                        </div>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

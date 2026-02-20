@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Buffer output to prevent header warnings
 /* ============================================================
    FILE: users/index.php
    PURPOSE: List all users with search and filtering

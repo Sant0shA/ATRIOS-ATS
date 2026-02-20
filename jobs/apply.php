@@ -18,9 +18,9 @@ session_start();
    LAST MODIFIED: 2026-02-20
    ============================================================ */
 
-require_once 'config.php';
-require_once 'includes/database.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/database.php';
+require_once __DIR__ . '/includes/functions.php';
 
 $database = new Database();
 $db = $database->getConnection();
@@ -35,7 +35,7 @@ $success = false;
 $token = $_GET['token'] ?? '';
 
 if (empty($token)) {
-    die('Invalid application link');
+    die('<h3>Invalid Application Link</h3><p>No token provided in URL.</p>');
 }
 
 /* ============================================================
@@ -52,10 +52,10 @@ try {
     $job = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$job) {
-        die('Job not found or no longer accepting applications');
+        die('<h3>Job Not Available</h3><p>This job posting is no longer accepting applications or does not exist.</p><p><small>Token: ' . htmlspecialchars($token) . '</small></p>');
     }
 } catch (PDOException $e) {
-    die('Database error');
+    die('<h3>Database Error</h3><p>' . htmlspecialchars($e->getMessage()) . '</p>');
 }
 
 // India cities list

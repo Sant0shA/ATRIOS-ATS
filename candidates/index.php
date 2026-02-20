@@ -340,6 +340,22 @@ try {
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     <?php endif; ?>
+                                    
+                                    <?php if (hasRole(['admin', 'manager'])): ?>
+                                        <?php if ($candidate['blacklisted']): ?>
+                                            <a href="blacklist.php?id=<?php echo $candidate['candidate_id']; ?>&action=unblacklist" 
+                                               class="btn btn-outline btn-sm text-success"
+                                               title="Remove Blacklist">
+                                                <i class="fas fa-check-circle"></i>
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="blacklist.php?id=<?php echo $candidate['candidate_id']; ?>&action=blacklist" 
+                                               class="btn btn-outline btn-sm text-danger"
+                                               title="Blacklist">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

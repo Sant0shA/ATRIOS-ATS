@@ -419,7 +419,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                       class="form-control <?php echo isset($errors['screening_answer_1']) ? 'is-invalid' : ''; ?>"
                                       rows="3"
                                       required><?php echo htmlspecialchars($formData['screening_answer_1'] ?? ''); ?></textarea>
-                            <small class="text-tertiary">Minimum 20 characters</small>
+                            <small class="text-tertiary">Minimum 2 characters</small>
                             <?php if (isset($errors['screening_answer_1'])): ?>
                                 <div class="invalid-feedback"><?php echo $errors['screening_answer_1']; ?></div>
                             <?php endif; ?>
@@ -431,7 +431,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                       class="form-control <?php echo isset($errors['screening_answer_2']) ? 'is-invalid' : ''; ?>"
                                       rows="3"
                                       required><?php echo htmlspecialchars($formData['screening_answer_2'] ?? ''); ?></textarea>
-                            <small class="text-tertiary">Minimum 20 characters</small>
+                            <small class="text-tertiary">Minimum 2 characters</small>
                             <?php if (isset($errors['screening_answer_2'])): ?>
                                 <div class="invalid-feedback"><?php echo $errors['screening_answer_2']; ?></div>
                             <?php endif; ?>
